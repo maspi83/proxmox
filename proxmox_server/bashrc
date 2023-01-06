@@ -1,0 +1,11 @@
+vm_update_hosts()
+{
+sed  -i -n '/VM/q;p' /etc/hosts
+echo "# VM" >> /etc/hosts
+/usr/local/sbin/vm_get_ips | egrep "^[0-9]{2}" >> /etc/hosts
+awk '/VM/,0' /etc/hosts
+}
+get_hosts()
+{
+egrep "^[0-9]{2}" /etc/hosts
+}
