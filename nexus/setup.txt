@@ -29,3 +29,11 @@ sudo systemctl restart nexus
 sudo systemctl status nexus
 cat  /app/sonatype-work/nexus3/admin.password
 cat /app/nexus-data/admin.password
+
+GUI Configuration:
+Docker proxy: dockerl
+HTTP: 8083
+Docker hub: https://registry-1.docker.io
+Realms: Add Docker bear token
+
+
