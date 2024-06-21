@@ -1,0 +1,31 @@
+sudo yum update -y
+sudo yum install wget -y
+sudo yum install java-1.8.0-openjdk.x86_64 -y
+sudo mkdir /app && cd /app
+sudo wget -O nexus.tar.gz https://download.sonatype.com/nexus/3/latest-unix.tar.gz
+sudo tar -xvf nexus.tar.gz
+ln -s nexus-3.69.0-02 nexus
+sudo adduser nexus
+sudo chown -R nexus:nexus /app/nexus-3.69.0-02/
+sudo chown -R nexus:nexus /app/sonatype-work
+sudo vi  /app/nexus/bin/nexus.rc
+sudo vi /app/nexus/bin/nexus.vmoptions
+sudo vi /etc/systemd/system/nexus.service
+sudo chkconfig nexus on
+sudo systemctl start nexus
+sudo systemctl status nexus
+sudo systemctl disable firewalld
+sudo systemctl stop firewalld
+sudo systemctl restart nexus
+sudo systemctl status nexus
+sudo vi /etc/systemd/system/nexus.service
+sudo vi /app/nexus/bin/nexus.vmoptions
+mkdir /app/nexus-data
+sudo chown -R nexus:nexus /app/nexus-data/
+sudo vi /app/nexus/bin/nexus.vmoptions
+mkdir -p /app/sonatype-work/nexus3/tmp
+sudo chown -R nexus:nexus /app/sonatype-work/
+sudo systemctl restart nexus
+sudo systemctl status nexus
+cat  /app/sonatype-work/nexus3/admin.password
+cat /app/nexus-data/admin.password
