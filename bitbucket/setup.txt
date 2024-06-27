@@ -1,0 +1,10 @@
+chmod 755 atlassian-bitbucket-8.19.5-x64.bin
+./atlassian-bitbucket-8.19.5-x64.bin # TUI get from bitbucket
+sudo systemctl disable firewalld
+sudo systemctl stop firewalld
+yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
+sudo yum update git
+systemctl enable atlbitbucket
+systemctl start atlbitbucket
+echo "feature.public.access=true" > /var/atlassian/application-data/bitbucket/shared/bitbucket.properties
+systemctl restart atlbitbucket
