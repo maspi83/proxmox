@@ -1,0 +1,47 @@
+
+mkdir -p monitoring_stack
+cd monitoring_stack
+wget https://github.com/prometheus/prometheus/releases/download/v2.54.0/prometheus-2.54.0.linux-amd64.tar.gz
+wget https://github.com/prometheus/alertmanager/releases/download/v0.27.0/alertmanager-0.27.0.linux-amd64.tar.gz
+wget https://github.com/prometheus/node_exporter/releases/download/v1.8.2/node_exporter-1.8.2.linux-amd64.tar.gz
+tar unpack
+ln -s
+
+
+sudo vi /etc/systemd/system/node_exporter.service
+[Unit]
+Description=Node Exporter
+
+[Service]
+#User=prometheus
+ExecStart=/root/monitoring_stack/node_exporter/node_exporter
+
+[Install]
+WantedBy=default.target
+
+sudo vi /etc/systemd/system/prometheus.service
+[Unit]
+Description=Prometheus
+
+[Service]
+#User=prometheus
+ExecStart=/root/monitoring_stack/prometheus/prometheus --config.file=/root/monitoring_stack/prometheus/prometheus.yml
+
+[Install]
+WantedBy=default.target
+
+
+sudo systemctl daemon-reload
+sudo systemctl enable node_exporter.service
+sudo systemctl enable prometheus.service
+sudo systemctl start node_exporter.service
+sudo systemctl start prometheus.service
+
+~/monitoring_stack/prometheus/prometheus.yml
+  - job_name: node
+    static_configs:
+      - targets: ['localhost:9100']
+
+
+http://192.168.100.131:9090/
+http://192.168.100.131:9100/metrics

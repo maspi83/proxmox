@@ -1,3 +1,15 @@
-# Centos7 update repo
+#
+echo "Centos7 update repo"
 sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
 sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+
+# 
+echo "Firewalld"
+sudo systemctl disable firewalld
+sudo systemctl stop firewalld
+
+# 
+echo "Disable SES
+sudo sed -i 's/SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config
+
+nmtui
