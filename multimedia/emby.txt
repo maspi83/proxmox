@@ -1,0 +1,6 @@
+# Ubuntu 24
+wget https://github.com/MediaBrowser/Emby.Releases/releases/download/4.8.8.0/emby-server-deb_4.8.8.0_amd64.deb
+sudo dpkg -i emby-server-deb_4.8.8.0_amd64.deb
+sudo mkdir /mnt/Something
+sudo apt install nfs-kernel-server
+sudo mount ...

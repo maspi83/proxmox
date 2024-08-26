@@ -9,7 +9,7 @@ sudo systemctl disable firewalld
 sudo systemctl stop firewalld
 
 # 
-echo "Disable SES
+echo "Disable SES"
 sudo sed -i 's/SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config
 
 nmtui
