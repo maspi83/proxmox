@@ -3,7 +3,7 @@ echo "--- Disable firewalld "
 sudo systemctl disable firewalld
 sudo systemctl stop firewalld
 echo ""
-echo "--- Yum update "
+echo "--- Yum update -y "
 sudo yum update -y
 echo ""
 echo "--- Disable SElinux "
