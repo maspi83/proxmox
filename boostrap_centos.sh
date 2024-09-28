@@ -4,7 +4,7 @@ sudo systemctl disable firewalld
 sudo systemctl stop firewalld
 echo ""
 echo "--- Yum update "
-sudo yum update
+sudo yum update -y
 echo ""
 echo "--- Disable SElinux "
 sudo sed -i 's/SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config
