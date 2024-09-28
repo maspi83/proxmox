@@ -48,14 +48,14 @@ networking:
 EOF
 
 echo "=== Install nginx-ingress"
-kubectl apply -f MY_URL
+kubectl apply -f https://raw.githubusercontent.com/maspi83/proxmox/refs/heads/master/k8s/kind/nginx_ingress.yaml
 
 
 echo ""
 
 echo "=== Install argo"
 kubectl create namespace argocd
-kubectl apply -n argocd -f XXX
+kubectl apply -n argocd -f https://raw.githubusercontent.com/maspi83/proxmox/refs/heads/master/k8s/kind/argocd_install.yaml
 echo ""
 
 echo "=== Create ingress"
