@@ -17,10 +17,9 @@ CLUSTER_NAME="argocd-kind"
 
 "If the creation kind process gets stucked delete cluster, reboot and start again"
 EOF
-
-read -p "Press any key to continue..."
-
-#
+echo ""
+echo "=== Sleep 30s, last chance to abort"
+sleep 30
 echo "=== Check for existing $CLUSTER_NAME"
 kind get clusters | grep -v grep | grep $CLUSTER_NAME > /dev/null 2>&1
 if [ "$?" -eq "0" ]
@@ -123,18 +122,19 @@ type: kubernetes.io/service-account-token
 EOF
 echo ""
 
-echo "=== Argo init pwd"
-kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath={".data.password"} | base64 -d
+echo "=== Wait 120s, until all start before proceeding to ingress setup, and getting tokens take a break"
+sleep 120
 echo ""
-
 
 echo "=== Get SA token"
 kubectl get secret admin-user -n kubernetes-dashboard -o jsonpath={".data.token"} | base64 -d
 echo ""
 
-echo "=== Wait 120s, until all start before proceeding to ingress setup, take a break"
-sleep 120
+
+echo "=== Argo init pwd"
+kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath={".data.password"} | base64 -d
 echo ""
+
 
 echo "=== Create argocd ingress"
 cat <<EOF | kubectl apply -f -
