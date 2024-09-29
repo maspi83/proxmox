@@ -18,12 +18,14 @@ CLUSTER_NAME="argocd-kind"
 "If the creation kind process gets stucked delete cluster, reboot and start again"
 EOF
 
+read -p "Press any key to continue..."
+
 #
 echo "=== Check for existing $CLUSTER_NAME"
 kind get clusters | grep -v grep | grep $CLUSTER_NAME > /dev/null 2>&1
 if [ "$?" -eq "0" ]
 then
-echo  kind delete clusters $CLUSTER_NAME
+  kind delete clusters $CLUSTER_NAME
 fi
 
 
