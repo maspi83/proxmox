@@ -18,7 +18,7 @@ f_continue()
     read -p "Press enter to continue..."
 }
 
-echo "Configure $HOSTNAME on your Windows system32/etc/hosts"
+echo "Configure $HOSTNAME, $ARGOHOSTNAME on your Windows system32/etc/hosts and on Linux OS"
 f_continue
 
 # GET KIND
