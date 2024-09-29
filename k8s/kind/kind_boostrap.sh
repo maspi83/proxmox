@@ -5,21 +5,28 @@ IP=$(ip route get 8.8.8.8 | sed -n '/src/{s/.*src *\([^ ]*\).*/\1/p;q}')
 PORT="6443"
 CLUSTER_NAME="argocd-kind"
 
+cat <<'EOF'
+Current setup 
+HOSTNAME="k8s-kind.local" 
+ARGOHOSTNAME="argocd.k8s-kind.local" 
+IP=$(ip route get 8.8.8.8 | sed -n '/src/{s/.*src *\([^ ]*\).*/\1/p;q}') 
+PORT="6443" 
+CLUSTER_NAME="argocd-kind" 
+
+"Configure $HOSTNAME, $ARGOHOSTNAME on your Windows system32/etc/hosts and on Linux OS"
+
+"If the creation kind process gets stucked delete cluster, reboot and start again"
+EOF
+
 #
 echo "=== Check for existing $CLUSTER_NAME"
-kind get clusters | grep -v grep | $CLUSTER_NAME
-if ["$?" -eq "0" ]
+kind get clusters | grep -v grep | grep $CLUSTER_NAME > /dev/null 2>&1
+if [ "$?" -eq "0" ]
 then
-    kind delete clusters $CLUSTER_NAME
-echo ""
+echo  kind delete clusters $CLUSTER_NAME
+fi
 
-f_continue()
-{
-    read -p "Press enter to continue..."
-}
 
-echo "Configure $HOSTNAME, $ARGOHOSTNAME on your Windows system32/etc/hosts and on Linux OS"
-f_continue
 
 # GET KIND
 
@@ -57,7 +64,7 @@ networking:
   apiServerPort: $PORT
 EOF
 
-f_continue
+
 
 echo "=== Install nginx-ingress"
 kubectl apply -f https://raw.githubusercontent.com/maspi83/proxmox/refs/heads/master/k8s/kind/nginx_ingress.yaml
@@ -68,33 +75,6 @@ kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/maspi83/proxmox/refs/heads/master/k8s/kind/argocd_install.yaml
 echo ""
 
-echo "=== Create argocd ingress"
-cat <<EOF | kubectl apply -f -
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: argocd-ingress
-  namespace: argocd
-  annotations:
-    spec.ingressClassName: nginx
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-    alb.ingress.kubernetes.io/ssl-passthrough: "true"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
-spec:
-  rules:
-  - host: $ARGOHOSTNAME
-    http:
-      paths:
-      - pathType: Prefix
-        path: /
-        backend:
-          service:
-            name: argocd-server
-            port:
-              number: 443
-EOF
-echo ""
-f_continue
 
 
 echo "=== Helm install"
@@ -104,12 +84,12 @@ chmod 700 get_helm.sh
 helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
 echo ""
 
-echo "=== Install Kubernetes-dashboard" 
+echo "=== Install Kubernetes-dashboard"
 helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard
 echo ""
-f_continue
 
-echo "=== Create Kubernetes-dashboard SA" 
+
+echo "=== Create Kubernetes-dashboard SA"
 cat <<EOF | kubectl apply -f -
 apiVersion: v1
 kind: ServiceAccount
@@ -141,11 +121,48 @@ type: kubernetes.io/service-account-token
 EOF
 echo ""
 
+echo "=== Argo init pwd"
+kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath={".data.password"} | base64 -d
+echo ""
+
 
 echo "=== Get SA token"
 kubectl get secret admin-user -n kubernetes-dashboard -o jsonpath={".data.token"} | base64 -d
 echo ""
 
+echo "=== Wait 120s, until all start before proceeding to ingress setup, take a break"
+sleep 120
+echo ""
+
+echo "=== Create argocd ingress"
+cat <<EOF | kubectl apply -f -
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-ingress
+  namespace: argocd
+  annotations:
+    spec.ingressClassName: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    alb.ingress.kubernetes.io/ssl-passthrough: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+spec:
+  rules:
+  - host: "$ARGOHOSTNAME"
+    http:
+      paths:
+      - pathType: Prefix
+        path: /
+        backend:
+          service:
+            name: argocd-server
+            port:
+              number: 443
+EOF
+echo ""
+
+
+echo "=== Create k8s dashboard ingress"
 cat <<EOF | kubectl apply -f -
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -160,7 +177,7 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /$2  # Rewrite to remove /dashboard from forwarded requests
 spec:
   rules:
-  - host: $HOSTNAME
+  - host: "$HOSTNAME"
     http:
       paths:
       - pathType: ImplementationSpecific
@@ -171,13 +188,4 @@ spec:
             port:
               number: 443
 EOF
-
-
-
-f_continue
-# echo "Proxy for dashboard"
-# echo "kubectl -n kubernetes-dashboard port-forward svc/dashboard-kong-proxy 8443:443"
-# echo ""
-# f_continue 
-
-
+echo ""
