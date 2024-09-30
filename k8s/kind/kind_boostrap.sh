@@ -68,12 +68,12 @@ EOF
 
 
 echo "=== Install nginx-ingress"
-kubectl apply -f https://raw.githubusercontent.com/maspi83/proxmox/refs/heads/master/k8s/kind/nginx_ingress.yaml
+kubectl apply -f https://raw.githubusercontent.com/maspi83/proxmox/refs/heads/master/k8s/kind/files/nginx_ingress.yaml
 echo ""
 
 echo "=== Install argocd"
 kubectl create namespace argocd
-kubectl apply -n argocd -f https://raw.githubusercontent.com/maspi83/proxmox/refs/heads/master/k8s/kind/argocd_install.yaml
+kubectl apply -n argocd -f https://raw.githubusercontent.com/maspi83/proxmox/refs/heads/master/k8s/kind/files/argocd_install.yaml
 echo ""
 
 
@@ -91,35 +91,7 @@ echo ""
 
 
 echo "=== Create Kubernetes-dashboard SA"
-cat <<EOF | kubectl apply -f -
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: admin-user
-  namespace: kubernetes-dashboard
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: admin-user
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: cluster-admin
-subjects:
-- kind: ServiceAccount
-  name: admin-user
-  namespace: kubernetes-dashboard
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: admin-user
-  namespace: kubernetes-dashboard
-  annotations:
-    kubernetes.io/service-account.name: "admin-user"
-type: kubernetes.io/service-account-token
-EOF
+kubectl apply -f https://raw.githubusercontent.com/maspi83/proxmox/refs/heads/master/k8s/kind/files/dashboard_sa.yaml
 echo ""
 
 echo "=== Wait 120s, until all start before proceeding to ingress setup, and getting tokens take a break"
@@ -137,57 +109,14 @@ echo ""
 
 
 echo "=== Create argocd ingress"
-cat <<EOF | kubectl apply -f -
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: argocd-ingress
-  namespace: argocd
-  annotations:
-    spec.ingressClassName: nginx
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-    alb.ingress.kubernetes.io/ssl-passthrough: "true"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
-spec:
-  rules:
-  - host: "$ARGOHOSTNAME"
-    http:
-      paths:
-      - pathType: Prefix
-        path: /
-        backend:
-          service:
-            name: argocd-server
-            port:
-              number: 443
-EOF
+curl -sL https://raw.githubusercontent.com/maspi83/proxmox/refs/heads/master/k8s/kind/files/ingress_argocd.yaml | \
+sed "s/ARGOHOSTNAME/$ARGOHOSTNAME/" \
+kubectl apply -f -
 echo ""
 
 
 echo "=== Create k8s dashboard ingress"
-cat <<EOF | kubectl apply -f -
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: kubernetes-dashboard-ingress
-  namespace: kubernetes-dashboard
-  annotations:
-    spec.ingressClassName: nginx
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-    alb.ingress.kubernetes.io/ssl-passthrough: "true"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/rewrite-target: "/$2"  # Rewrite to remove /dashboard from forwarded requests
-spec:
-  rules:
-  - host: "$HOSTNAME"
-    http:
-      paths:
-      - pathType: ImplementationSpecific
-        path: "/dashboard(/|$)(.*)"
-        backend:
-          service:
-            name: kubernetes-dashboard-kong-proxy
-            port:
-              number: 443
-EOF
+curl -sL https://raw.githubusercontent.com/maspi83/proxmox/refs/heads/master/k8s/kind/files/ingress_dashboard.yaml | \
+sed "s/HOSTNAME/$HOSTNAME/" \ 
+kubectl apply -f -
 echo ""
