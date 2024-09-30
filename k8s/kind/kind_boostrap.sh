@@ -176,7 +176,7 @@ metadata:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     alb.ingress.kubernetes.io/ssl-passthrough: "true"
     nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/rewrite-target: /$2  # Rewrite to remove /dashboard from forwarded requests
+    nginx.ingress.kubernetes.io/rewrite-target: "/$2"  # Rewrite to remove /dashboard from forwarded requests
 spec:
   rules:
   - host: "$HOSTNAME"
