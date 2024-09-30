@@ -1,6 +1,6 @@
 #!/bin/bash
-HOSTNAME="k8s-kind.local"
-ARGOHOSTNAME="argocd.k8s-kind.local"
+export HOSTNAME="k8s-kind.local"
+export ARGOHOSTNAME="argocd.k8s-kind.local"
 IP=$(ip route get 8.8.8.8 | sed -n '/src/{s/.*src *\([^ ]*\).*/\1/p;q}')
 PORT="6443"
 CLUSTER_NAME="argocd-kind"
@@ -82,11 +82,11 @@ echo "=== Helm install"
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
 chmod 700 get_helm.sh
 ./get_helm.sh
-helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
+helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/ 
 echo ""
 
 echo "=== Install Kubernetes-dashboard"
-helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard
+helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard > /dev/null 2>&1
 echo ""
 
 
@@ -109,14 +109,10 @@ echo ""
 
 
 echo "=== Create argocd ingress"
-curl -sL https://raw.githubusercontent.com/maspi83/proxmox/refs/heads/master/k8s/kind/files/ingress_argocd.yaml | \
-sed "s/ARGOHOSTNAME/$ARGOHOSTNAME/" \
-kubectl apply -f -
+curl -sL https://raw.githubusercontent.com/maspi83/proxmox/refs/heads/master/k8s/kind/files/ingress_argocd.yaml | sed "s/ARGOHOSTNAME/$ARGOHOSTNAME/g" | kubectl apply -f -
 echo ""
 
 
 echo "=== Create k8s dashboard ingress"
-curl -sL https://raw.githubusercontent.com/maspi83/proxmox/refs/heads/master/k8s/kind/files/ingress_dashboard.yaml | \
-sed "s/HOSTNAME/$HOSTNAME/" \ 
-kubectl apply -f -
+curl -sL https://raw.githubusercontent.com/maspi83/proxmox/refs/heads/master/k8s/kind/files/ingress_dashboard.yaml | sed "s/HOSTNAME/$HOSTNAME/g" | kubectl apply -f -
 echo ""
